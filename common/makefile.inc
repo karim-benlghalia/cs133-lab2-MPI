@@ -16,11 +16,7 @@ clang-tidy: $(SRCS)
 tar: submission.tar.gz
 
 submission.tar.gz: $(REQUIRED_FILES)
-	@rm -rf submission
-	@mkdir submission
-	@cp $^ submission
-	tar czvf submission.tar.gz submission
-	@rm -rf submission
+	tar czvf submission.tar.gz $^
 
 check:
-	@tar tf submission.tar.gz $(addprefix submission/, $(REQUIRED_FILES))
+	@tar tf submission.tar.gz $(REQUIRED_FILES)
