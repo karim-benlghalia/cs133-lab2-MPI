@@ -13,10 +13,7 @@ CXXFLAGS += -std=c++11 -O3 -fopenmp \
 clang-tidy: $(SRCS)
 	clang-tidy $(filter %.cpp, $^) -- -Wall
 
-tar: submission.tar.gz
+zip: submission.zip
 
-submission.tar.gz: $(REQUIRED_FILES)
-	tar czvf submission.tar.gz $^
-
-check:
-	@tar tf submission.tar.gz $(REQUIRED_FILES)
+submission.zip: $(REQUIRED_FILES)
+	zip -r submission.zip $^
