@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
   }
 
   if (fail) {
+    clog << "Your answer is INCORRECT!\n";
     return 1;
   }
   return 0;
