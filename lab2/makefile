@@ -15,7 +15,7 @@ test: gemm
 	mpiexec -np $(np) ./$^
 
 gemm: $(SRCS)
-	$(CXX) $(subst -fopenmp,,$(CXXFLAGS)) $(LAB2_CXX_FLAGS) -o $@ $(filter %.cpp %.a %.o, $^)
+	$(CXX) $(CXXFLAGS) $(LAB2_CXX_FLAGS) -o $@ $(filter %.cpp %.a %.o, $^)
 
 clean:
 	$(RM) gemm
