@@ -2,7 +2,7 @@
 
 #include <mpi.h>
 
-#include "../../lab1/lib/gemm.h"
+#include "gemm.h"
 
 using std::clog;
 using std::endl;

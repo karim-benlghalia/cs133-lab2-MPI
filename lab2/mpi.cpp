@@ -2,7 +2,7 @@
 
 #include <mpi.h>
 
-#include "../lab1/lib/gemm.h"
+#include "lib/gemm.h"
 #include "lib/common.h"
 // You can directly use aligned_alloc
 // with lab2::aligned_alloc(...)
