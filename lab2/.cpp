@@ -7,7 +7,7 @@
 // You can directly use aligned_alloc
 // with lab2::aligned_alloc(...)
 
-
+#define block_size 64
 // Using declarations, if any...
 
 void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
@@ -17,7 +17,7 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
     int rank;
     int Size;
     int rows;
-    
+    int i, j, k;
     MPI_Comm_size(MPI_COMM_WORLD, &Size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -25,10 +25,10 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
      rows = kI / Size;
     //  int n = kI;
     //  MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    float *a_local = (float *)lab2::aligned_alloc(4096, rows * kK * sizeof(float));
-    float *c_local = (float *)lab2::aligned_alloc(4096, rows * kJ * sizeof(float));
-    float *c_local2 = (float *)lab2::aligned_alloc(4096, rows * kJ * sizeof(float));
-    float *b_local = (float *)lab2::aligned_alloc(4096, kK * kJ * sizeof(float));
+    float *a_local = (float *)aligned_alloc(1024, rows * kK * sizeof(float));
+    float *c_local = (float *)aligned_alloc(1024, rows * kJ * sizeof(float));
+    float *c_local2 = (float *)aligned_alloc(1024, rows * kJ * sizeof(float));
+    float *b_local = (float *)lab2::aligned_alloc(1024, kK * kJ * sizeof(float));
    // float *b_local =  (float*)malloc(sizeof(float) * kK * kJ);
     //memcpy(b_local, b, kK * kJ* sizeof(float));
     
@@ -44,7 +44,7 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
          //float *c_local = (float *)aligned_alloc(1024, rows * kJ * sizeof(float));
          //float *c_local2 = (float *)aligned_alloc(1024, rows * kJ * sizeof(float));
     
-        float *b_local = (float*)lab2::aligned_alloc(4096,sizeof(float) * kK * kJ);
+        float *b_local = (float*)lab2::aligned_alloc(1024,sizeof(float) * kK * kJ);
       //  memcpy(b_local, b, kK * kJ* sizeof(float)); 
     }
     else {
@@ -56,23 +56,23 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
     
     
     
-     for(int i = 0; i < rows * kJ; i++) {
+     for(i = 0; i < rows * kJ; i++) {
         c_local[i] = 0;
           c_local2[i] = 0;
     }
 
-    
-    
-    for(int i = 0; i < ( rows / 64); i++) {
-        for(int k = 0; k < (kK / 64); k++) {
-            for(int j = 0; j < (kJ / 64); j++) {
-                for(int bi = 0; bi < 64; bi++) {
-                    for(int bk = 0; bk < 64; bk++) {
-                        int aIndex =(i * 64 + bi) * kI + k * 64 + bk;
-                        for(int bj = 0; bj < 64; bj++) {
-                            int cIndex = (i * 64 + bi) * kJ + (j * 64 + bj);
-                            
-                            c_local[cIndex] += a_local[aIndex] * b_local[(k * 64 + bk) * kK + (j * 64 + bj)];
+    int bi, bj, bk;
+    int i_blocks = rows / block_size;
+    int j_blocks = n / block_size;
+    int k_blocks = n / block_size;
+
+    for(i = 0; i < ( rows / block_size); i++) {
+        for(k = 0; k < (kK / block_size); k++) {
+            for(j = 0; j < (kJ / block_size); j++) {
+                for(bi = 0; bi < block_size; bi++) {
+                    for(bk = 0; bk < block_size; bk++) {
+                        for(bj = 0; bj < block_size; bj++) {
+                            c_local[(i * block_size + bi) * kJ + (j * block_size + bj)] += a_local[(i * block_size + bi) * kI + k * block_size + bk] * b_local[(k * block_size + bk) * kK + (j * block_size + bj)];
                         }
                     }
                 }
@@ -92,7 +92,7 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
     //  }
  
   
-     MPI_Gather(c_local, (rows * kJ), MPI_FLOAT, c, (rows * kJ), MPI_FLOAT, 0, MPI_COMM_WORLD);
+     MPI_Gather(c_local, (rows * n), MPI_FLOAT, c, (rows * n), MPI_FLOAT, 0, MPI_COMM_WORLD);
    // memcpy(c,c_local2, kJ*kK*sizeof(float));
       //  for (int i = 0; i < kI; i++)
       //    for (int j = 0; j < kJ; j++)
