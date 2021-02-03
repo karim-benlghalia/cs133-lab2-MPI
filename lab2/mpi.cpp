@@ -56,29 +56,65 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
     
     
     
-     for(int i = 0; i < rows * kJ; i++) {
-        c_local[i] = 0;
-          c_local2[i] = 0;
-    }
+    //  for(int i = 0; i < rows * kJ; i++) {
+    //     c_local[i] = 0;
+    //       c_local2[i] = 0;
+    // }
 
+     float temp;
+     for (int b_i = 0; b_i < rows; b_i += 64)
+  { 
+    for (int b_j = 0; b_j < kJ; b_j += 64)
+    {
+
+    float temp_buff[64][64] = {0};
     
-    
-    for(int i = 0; i < ( rows / 64); i++) {
-        for(int k = 0; k < (kK / 64); k++) {
-            for(int j = 0; j < (kJ / 64); j++) {
-                for(int bi = 0; bi < 64; bi++) {
-                    for(int bk = 0; bk < 64; bk++) {
-                        int aIndex =(i * 64 + bi) * kI + k * 64 + bk;
-                        for(int bj = 0; bj < 64; bj++) {
-                            int cIndex = (i * 64 + bi) * kJ + (j * 64 + bj);
-                            
-                            c_local[cIndex] += a_local[aIndex] * b_local[(k * 64 + bk) * kK + (j * 64 + bj)];
-                        }
-                    }
-                }
+      for (int b_k = 0; b_k < kK; b_k += 64)
+      {
+        for (int i = b_i; i < ((b_i + 64)); i++)
+        {
+          int indexI = i - b_i;
+          int indexJ=0;
+          for (int k = b_k; k < ((b_k + 64) ); k++)
+          {
+            temp = a_local[i*kI+k];
+            for (int j = b_j; j < ((b_j + 64) ); j++)
+            {
+              indexJ = j - b_j;
+              temp_buff[indexI][indexJ] += temp * b_local[k*kK+j];
+             // temp_buff2[indexI][indexJ] += temp * b[k][j]; 
             }
+
+          }
         }
+      }
+      //memcpy ( &temp_buff2, &temp_buff, sizeof(temp_buff) );
+     //&temp_buff2 = &temp_buff;
+    // #pragma omp parallel for schedule(static, 8)
+      for (int i = 0; i < 64; i++)
+      { 
+        int indexI = b_i + i;
+        memmove(&c_local[indexI *kI+b_j], &temp_buff[i][0], sizeof(float) * 64);}
     }
+  }
+    
+    
+    // for(int i = 0; i < ( rows / 64); i++) {
+    //     for(int k = 0; k < (kK / 64); k++) {
+    //         for(int j = 0; j < (kJ / 64); j++) {
+    //             for(int bi = 0; bi < 64; bi++) {
+    //                 for(int bk = 0; bk < 64; bk++) {
+    //                     int aIndex =(i * 64 + bi) * kI + k * 64 + bk;
+    //                     for(int bj = 0; bj < 64; bj++) {
+    //                         int cIndex = (i * 64 + bi) * kJ + (j * 64 + bj);
+                            
+    //                         c_local[cIndex] += a_local[aIndex] * b_local[(k * 64 + bk) * kK + (j * 64 + bj)];
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
   
     //  for (i = 0; i < rows; i++)
     //  {
