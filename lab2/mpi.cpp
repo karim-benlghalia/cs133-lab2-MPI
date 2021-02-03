@@ -62,23 +62,23 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
     // }
 
     float temp;
-     for (int b_i = 0; b_i < rows; b_i += 64)
+     for (int b_i = 0; b_i < rows; b_i += 128)
   { 
-    for (int b_j = 0; b_j < kJ; b_j += 64)
+    for (int b_j = 0; b_j < kJ; b_j += 128)
     {
 
-    float temp_buff[64][64] = {0};
+    float temp_buff[128][128] = {0};
     
-      for (int b_k = 0; b_k < kK; b_k += 64)
+      for (int b_k = 0; b_k < kK; b_k += 128)
       {
-        for (int i = b_i; i < ((b_i + 64)); i++)
+        for (int i = b_i; i < ((b_i + 128)); i++)
         {
           int indexI = i - b_i;
           int indexJ=0;
-          for (int k = b_k; k < ((b_k + 64) ); k++)
+          for (int k = b_k; k < ((b_k + 128) ); k++)
           {
             temp = a_local[i*kI+k];
-            for (int j = b_j; j < ((b_j + 64) ); j++)
+            for (int j = b_j; j < ((b_j + 128) ); j++)
             {
               indexJ = j - b_j;
               temp_buff[indexI][indexJ] += temp * b_local[k*kK+j];
@@ -91,10 +91,10 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
       //memcpy ( &temp_buff2, &temp_buff, sizeof(temp_buff) );
      //&temp_buff2 = &temp_buff;
     // #pragma omp parallel for schedule(static, 8)
-      for (int i = 0; i < 64; i++)
+      for (int i = 0; i < 128; i++)
       { 
         int indexI = b_i + i;
-        memmove(&c_local[indexI *kI+b_j], &temp_buff[i][0], sizeof(float) * 64);}
+        memmove(&c_local[indexI *kI+b_j], &temp_buff[i][0], sizeof(float) * 128);}
     }
   }
     
