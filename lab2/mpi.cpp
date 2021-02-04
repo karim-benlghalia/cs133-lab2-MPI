@@ -97,24 +97,6 @@ void GemmParallelBlocked(const float a[kI][kK], const float b[kK][kJ],
         memmove(&c_local[indexI *kI+b_j], &temp_buff[i][0], sizeof(float) * 64);}
     }
   }
-    
-    
-    // for(int i = 0; i < ( rows / 32); i++) {
-    //     for(int k = 0; k < (kK / 32); k++) {
-    //         for(int j = 0; j < (kJ / 32); j++) {
-    //             for(int bi = 0; bi < 32; bi++) {
-    //                 for(int bk = 0; bk < 32; bk++) {
-    //                     int aIndex =(i * 64 + bi) * kI + k * 64 + bk;
-    //                     for(int bj = 0; bj < 64; bj++) {
-    //                         int cIndex = (i * 64 + bi) * kJ + (j * 64 + bj);
-                            
-    //                         c_local[cIndex] += a_local[aIndex] * b_local[(k * 64 + bk) * kK + (j * 64 + bj)];
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
   
     //  for (i = 0; i < rows; i++)
     //  {
